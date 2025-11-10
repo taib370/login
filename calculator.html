@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculator</title>
+    <title>الآلة الحاسبة</title>
     <style>
         * {
             margin: 0;
@@ -12,22 +12,51 @@
             font-family: Arial, sans-serif;
         }
 
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        /* Girl Theme - Default */
         body {
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(45deg, #bd87d6, #618cb8);
+            background: linear-gradient(45deg, #FF69B4, #FFB6C1);
+            transition: all 0.5s ease;
+        }
+
+        /* Boy Theme */
+        body.boy-theme {
+            background: linear-gradient(45deg, #4169E1, #00BFFF);
         }
 
         .calculator {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(10px);
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 20px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
             width: 320px;
+            transition: all 0.3s ease;
         }
 
         .display {
@@ -56,34 +85,55 @@
             font-size: 1.2em;
             border-radius: 10px;
             cursor: pointer;
-            background: rgba(255, 255, 255, 0.1);
             color: white;
             transition: all 0.3s ease;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        button:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        button:active {
-            transform: translateY(0);
+        /* Girl Theme Button Colors */
+        button {
+            background: rgba(255, 182, 193, 0.3);
         }
 
         .operator {
-            background: rgba(52, 152, 219, 0.3);
+            background: rgba(255, 105, 180, 0.4);
         }
 
         .equals {
-            background: rgba(46, 204, 113, 0.3);
+            background: rgba(255, 20, 147, 0.4);
             grid-column: span 2;
         }
 
         .clear {
-            background: rgba(231, 76, 60, 0.3);
+            background: rgba(219, 112, 147, 0.4);
             grid-column: span 2;
+        }
+
+        /* Boy Theme Button Colors */
+        .boy-theme button {
+            background: rgba(65, 105, 225, 0.3);
+        }
+
+        .boy-theme .operator {
+            background: rgba(0, 191, 255, 0.4);
+        }
+
+        .boy-theme .equals {
+            background: rgba(30, 144, 255, 0.4);
+        }
+
+        .boy-theme .clear {
+            background: rgba(70, 130, 180, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            filter: brightness(1.1);
+        }
+
+        button:active {
+            transform: translateY(0);
         }
 
         /* Responsive Design */
@@ -107,6 +157,8 @@
     </style>
 </head>
 <body>
+    <button class="theme-toggle" onclick="toggleTheme()">🎀 تغيير النمط 🚀</button>
+    
     <div class="calculator">
         <div class="display">0</div>
         <div class="buttons">
@@ -136,6 +188,19 @@
         let operator = null;
         let newNumberStarted = false;
         const display = document.querySelector('.display');
+
+        // Theme toggling
+        function toggleTheme() {
+            const body = document.body;
+            const button = document.querySelector('.theme-toggle');
+            if (body.classList.contains('boy-theme')) {
+                body.classList.remove('boy-theme');
+                button.innerHTML = '🎀 تغيير النمط 🚀';
+            } else {
+                body.classList.add('boy-theme');
+                button.innerHTML = '🚀 تغيير النمط 🎀';
+            }
+        }
 
         function updateDisplay() {
             display.textContent = currentDisplay;
