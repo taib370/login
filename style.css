@@ -98,6 +98,33 @@ input[type="email"]:focus, input[type="password"]:focus{
 }
 .btn-secondary:hover{transform: translateY(-4px);}
 
+.author-credit {
+    text-align: center;
+    margin: 15px 0;
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    padding: 10px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.card-title {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 25px;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* تحسينات للشاشات الصغيرة */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 20px;
+    }
+    .card-title {
+        font-size: 20px;
+    }
+}
 .divider{
     text-align: center;
     color: rgba(255,255,255,0.7);
