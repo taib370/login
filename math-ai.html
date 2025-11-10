@@ -88,7 +88,7 @@
   </div>
 
   <script>
-    // Chat UI with optional remote API integration and local math fallback
+    // Chat UI with optional remote API integration (OpenAI or Gemini) and local math fallback
     const messagesEl = document.getElementById('messages');
     const input = document.getElementById('chatInput');
     const sendBtn = document.getElementById('sendBtn');
@@ -99,54 +99,61 @@
     const saveSettings = document.getElementById('saveSettings');
     const closeSettings = document.getElementById('closeSettings');
 
-    // Load settings
+    // New fields for provider and Gemini key
+    // If the DOM doesn't have them yet (older file), create references safely
+    function $(id){ return document.getElementById(id); }
+    // Add provider select and gemini input dynamically if not present
+    if(!$('providerSelect')){
+      const panel = settingsModal.querySelector('.panel');
+      const selLabel = document.createElement('label'); selLabel.textContent = 'مزود الردود';
+      const sel = document.createElement('select'); sel.id = 'providerSelect'; sel.style.marginTop = '6px'; sel.style.width='100%'; sel.style.padding='8px'; sel.style.borderRadius='8px'; sel.style.background='rgba(255,255,255,0.02)'; sel.style.border='1px solid rgba(255,255,255,0.04)';
+      ['local','openai','gemini'].forEach(v=>{ const opt = document.createElement('option'); opt.value=v; opt.textContent = v==='local'? 'محلي فقط' : (v==='openai'? 'OpenAI' : 'Gemini'); sel.appendChild(opt); });
+      panel.insertBefore(selLabel, panel.querySelector('label'));
+      panel.insertBefore(sel, panel.querySelector('label'));
+
+      const gLabel = document.createElement('label'); gLabel.textContent = 'مفتاح Gemini (اختياري)';
+      const gInput = document.createElement('input'); gInput.type='text'; gInput.id='geminiKeyInput'; gInput.placeholder='أدخل مفتاح Gemini (اختياري)'; gInput.style.marginTop='6px';
+      panel.insertBefore(gLabel, panel.querySelector('label'));
+      panel.insertBefore(gInput, panel.querySelector('label'));
+    }
+
     const savedBg = localStorage.getItem('chat_bg') || '#071028';
     const savedApiKey = localStorage.getItem('chat_apikey') || '';
+    const savedProvider = localStorage.getItem('chat_provider') || 'local';
+    const savedGemini = localStorage.getItem('chat_gemini_apikey') || '';
+
     bgColorInput.value = savedBg;
     apiKeyInput.value = savedApiKey;
+    $( 'providerSelect').value = savedProvider;
+    $( 'geminiKeyInput').value = savedGemini;
     document.body.style.background = savedBg;
 
     settingsBtn.onclick = ()=> settingsModal.classList.add('active');
     closeSettings.onclick = ()=> settingsModal.classList.remove('active');
     saveSettings.onclick = ()=>{
-      const v = bgColorInput.value; const k = apiKeyInput.value.trim();
+      const v = bgColorInput.value;
+      const k = apiKeyInput.value.trim();
+      const provider = $( 'providerSelect').value;
+      const gk = $( 'geminiKeyInput').value.trim();
       localStorage.setItem('chat_bg', v);
       localStorage.setItem('chat_apikey', k);
+      localStorage.setItem('chat_provider', provider);
+      localStorage.setItem('chat_gemini_apikey', gk);
       document.body.style.background = v;
       settingsModal.classList.remove('active');
       alert('تم حفظ الإعدادات');
     }
 
-    // simple utilities and evaluator (same as before)
+    // utilities
     const funcs = ['sqrt','abs','sin','cos','tan','asin','acos','atan','log','ln','max','min','pow'];
-    function sanitizeExpression(expr){
-      expr = expr.replace(/×|\*/g,'*').replace(/÷|:/g,'/').replace(/\u221A/g,'sqrt');
-      expr = expr.replace(/\^/g,'**');
-      expr = expr.replace(/ما|كم|نتيجة|أوجد|احسب|؟|\?/gi,'');
-      expr = expr.replace(/\bمربع\s+(\d+)/gi,'($1**2)');
-      if(/[^0-9+\-*/().,%\sA-Za-z_\*\*]/.test(expr)) expr = expr.replace(/[^0-9+\-*/().,%\sA-Za-z_\*\*]+/g,'');
-      funcs.forEach(fn => { const re = new RegExp('\\b'+fn+'\\b','gi'); expr = expr.replace(re, 'Math.'+fn); });
-      expr = expr.replace(/Math.ln/gi,'Math.log');
-      return expr;
-    }
-    function safeEvaluate(expr){
-      if(/__|process|window|document|eval|Function|=>|while|for|let|const|var/.test(expr)) throw new Error('عبارة غير آمنة');
-      if(/[^0-9+\-*/().,%\sA-Za-z*_]/.test(expr)) throw new Error('حروف غير مسموح بها');
-      const fn = new Function('return ('+expr+');'); const val = fn(); if(typeof val==='number' && !isFinite(val)) throw new Error('قسمة على صفر'); return val;
-    }
+    function sanitizeExpression(expr){ expr = expr.replace(/×|\*/g,'*').replace(/÷|:/g,'/').replace(/\u221A/g,'sqrt'); expr = expr.replace(/\^/g,'**'); expr = expr.replace(/ما|كم|نتيجة|أوجد|احسب|؟|\?/gi,''); expr = expr.replace(/\bمربع\s+(\d+)/gi,'($1**2)'); if(/[^0-9+\-*/().,%\sA-Za-z_\*\*]/.test(expr)) expr = expr.replace(/[^0-9+\-*/().,%\sA-Za-z_\*\*]+/g,''); funcs.forEach(fn => { const re = new RegExp('\\b'+fn+'\\b','gi'); expr = expr.replace(re, 'Math.'+fn); }); expr = expr.replace(/Math.ln/gi,'Math.log'); return expr; }
+    function safeEvaluate(expr){ if(/__|process|window|document|eval|Function|=>|while|for|let|const|var/.test(expr)) throw new Error('عبارة غير آمنة'); if(/[^0-9+\-*/().,%\sA-Za-z*_]/.test(expr)) throw new Error('حروف غير مسموح بها'); const fn = new Function('return ('+expr+');'); const val = fn(); if(typeof val==='number' && !isFinite(val)) throw new Error('قسمة على صفر'); return val; }
     function extractExpression(text){ let t = text.replace(/\n/g,' '); const hasMathChars = /[0-9()+\-*/^×÷\.]/.test(t); if(!hasMathChars) return null; const allowed = t.match(/[0-9A-Za-z()+\-*/^×÷.,\s]+/g); if(!allowed) return null; return allowed.join(' ').trim(); }
 
     function appendMessage(text, who){ const div = document.createElement('div'); div.className='msg '+who; div.innerHTML = '<div>'+escapeHtml(text)+'</div>'; messagesEl.appendChild(div); messagesEl.scrollTop = messagesEl.scrollHeight; }
     function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-    // simple conversational fallback
-    function localFallbackReply(text){
-      const t = text.toLowerCase();
-      if(/مرحبا|اهلا|سلام/.test(t)) return 'أهلاً! كيف يمكنني مساعدتك اليوم؟';
-      if(/اسمك/.test(t)) return 'أنا مساعد صغير مدمج في هذه الصفحة.';
-      if(/شكرا|شكراً/.test(t)) return 'على الرحب والسعة!';
-      return null;
-    }
+    function localFallbackReply(text){ const t = text.toLowerCase(); if(/مرحبا|اهلا|سلام/.test(t)) return 'أهلاً! كيف يمكنني مساعدتك اليوم؟'; if(/اسمك/.test(t)) return 'أنا مساعد صغير مدمج في هذه الصفحة.'; if(/شكرا|شكراً/.test(t)) return 'على الرحب والسعة!'; return null; }
 
     async function processUserMessage(text){
       appendMessage(text,'user');
@@ -154,51 +161,34 @@
       messagesEl.scrollTop = messagesEl.scrollHeight;
 
       await new Promise(r=>setTimeout(r,400));
-      // remove last bot placeholder
       const bots = Array.from(messagesEl.querySelectorAll('.msg.bot')); const placeholder = bots.pop(); if(placeholder && placeholder.textContent.includes('جاري التفكير')) placeholder.remove();
 
-      // try math extraction
+      // math local
       const extracted = extractExpression(text);
       if(extracted){
         const sanitized = sanitizeExpression(extracted);
-        try{
-          const result = safeEvaluate(sanitized);
-          appendMessage('النتيجة: '+((typeof result==='number')?Math.round(result*1000000)/1000000:result)+'\n('+sanitized+')','bot');
-          return;
-        }catch(e){
-          appendMessage('تعذر حساب التعبير محلياً: '+e.message,'bot');
-          return;
-        }
+        try{ const result = safeEvaluate(sanitized); appendMessage('النتيجة: '+((typeof result==='number')?Math.round(result*1000000)/1000000:result)+'\n('+sanitized+')','bot'); return; }catch(e){ appendMessage('تعذر حساب التعبير محلياً: '+e.message,'bot'); return; }
       }
 
-      // if API key present, try remote answer
-      const key = localStorage.getItem('chat_apikey') || '';
-      if(key){
-        try{
-          const reply = await fetchOpenAI(text, key);
-          appendMessage(reply,'bot');
-          return;
-        }catch(err){
-          console.warn('API error',err);
-          // fall through to local fallback
-        }
+      // provider logic
+      const provider = localStorage.getItem('chat_provider') || 'local';
+      if(provider === 'openai'){
+        const key = localStorage.getItem('chat_apikey') || '';
+        if(key){ try{ const reply = await fetchOpenAI(text, key); appendMessage(reply,'bot'); return; }catch(err){ console.warn('OpenAI error',err); appendMessage('فشل الاتصال بمزود OpenAI: '+err.message,'bot'); return; } }
+      } else if(provider === 'gemini'){
+        const gk = localStorage.getItem('chat_gemini_apikey') || '';
+        if(gk){ try{ const reply = await fetchGemini(text, gk); appendMessage(reply,'bot'); return; }catch(err){ console.warn('Gemini error',err); appendMessage('فشل الاتصال بمزود Gemini: '+err.message,'bot'); return; } }
       }
 
       const fallback = localFallbackReply(text);
       if(fallback){ appendMessage(fallback,'bot'); return; }
-
-      appendMessage('أنا الآن محدودة محلياً — لردود طبيعية يمكنك إدخال مفتاح OpenAI في الإعدادات لتجربة إجابات أوسع.','bot');
+      appendMessage('أنا الآن محدودة محلياً — ضع مفتاح OpenAI أو Gemini في الإعدادات للحصول على ردود عامة أفضل.','bot');
     }
 
-    // Optional: call OpenAI Chat API (user must provide key). This code is a simple example.
+    // OpenAI fetch (unchanged)
     async function fetchOpenAI(userText, apiKey){
-      // Use Chat Completions (gpt-3.5-turbo) endpoint
       const endpoint = 'https://api.openai.com/v1/chat/completions';
-      const body = {
-        model: 'gpt-3.5-turbo',
-        messages: [{role:'user', content: userText}],
-        max_tokens: 300,
-      };
+      const body = { model: 'gpt-3.5-turbo', messages: [{role:'user', content: userText}], max_tokens: 300 };
       const res = await fetch(endpoint, {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey}, body: JSON.stringify(body)});
       if(!res.ok) throw new Error('خطأ من الخادم: '+res.status);
       const data = await res.json();
@@ -206,11 +196,28 @@
       return content || 'لا يوجد رد.';
     }
 
+    // Gemini / Google Generative API example (requires API key or proper endpoint and permissions)
+    async function fetchGemini(userText, apiKey){
+      // This example uses the Generative Language REST endpoint (may require an API key or OAuth setup).
+      // Endpoint and body may need adjustment depending on your Google/Vertex AI setup.
+      const model = 'text-bison-001';
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta2/models/${model}:generate?key=${apiKey}`;
+      const body = { prompt: { text: userText }, temperature: 0.2, maxOutputTokens: 300 };
+      const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if(!res.ok) throw new Error('خطأ من خادم Gemini: '+res.status);
+      const data = await res.json();
+      // Try to parse common candidate shapes
+      let text = null;
+      if(data.candidates && data.candidates[0] && data.candidates[0].output) text = data.candidates[0].output;
+      if(!text && data.candidates && data.candidates[0] && data.candidates[0].content) text = data.candidates[0].content.map(c=>c.text || '').join('\n');
+      if(!text && data.output && data.output[0] && data.output[0].content) text = data.output[0].content.map(c=>c.text || '').join('\n');
+      return text || JSON.stringify(data);
+    }
+
     sendBtn.onclick = ()=>{ const v = input.value.trim(); if(!v) return; processUserMessage(v); input.value=''; input.focus(); };
     input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendBtn.click(); } });
 
-    // initial welcome
-    appendMessage('مرحباً! اسألني أي شيء — إن كان سؤالاً رياضياً سأحسبه مباشرة. لإجابات عامة أدخل مفتاح OpenAI في الإعدادات لإتاحة ردود طبيعية كاملة.','bot');
+    appendMessage('مرحباً! اسألني أي شيء — إن كان سؤالاً رياضياً سأحسبه مباشرة. لإجابات عامة أدخل مفتاح OpenAI أو Gemini في الإعدادات لإتاحة ردود طبيعية كاملة.','bot');
   </script>
 </body>
 </html>
