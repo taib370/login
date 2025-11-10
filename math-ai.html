@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>دردشة ذكية</title>
+  <style>
+    :root{--bg:#0b1220;--panel:#0f1726;--accent:#10a37f;--muted:#9aa4b2}
+    html,body{height:100%;margin:0}
+    body{background:linear-gradient(180deg,#071028 0%,#0b1524 100%);font-family:Inter,Arial,Helvetica, sans-serif;color:#e6eef8}
+    .chat-wrap{max-width:940px;height:100vh;margin:0 auto;display:flex;flex-direction:column}
+
+    /* header similar to ChatGPT */
+    header.chat-header{padding:14px 16px;background:linear-gradient(90deg,#0f172a,#071028);border-bottom:1px solid rgba(255,255,255,0.03);display:flex;align-items:center;gap:12px}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo svg{width:28px;height:28px}
+    header.chat-header h1{font-size:16px;margin:0}
+    .header-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+    .icon-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:8px;border-radius:8px;cursor:pointer}
+
+    /* messages */
+    .messages{flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:12px;background:transparent}
+    .msg{max-width:78%;padding:12px 14px;border-radius:12px;line-height:1.45;white-space:pre-wrap}
+    .msg.user{align-self:flex-end;background:#111827;color:#fff;border-bottom-right-radius:6px}
+    .msg.bot{align-self:flex-start;background:#0b1220;color:#e6eef8;border:1px solid rgba(255,255,255,0.03);border-bottom-left-radius:6px}
+    .msg .meta{font-size:12px;color:var(--muted);margin-top:8px}
+
+    /* composer like ChatGPT */
+    .composer{padding:12px 16px;background:linear-gradient(90deg,#071028,#0b1220);border-top:1px solid rgba(255,255,255,0.03);display:flex;gap:12px;align-items:flex-end}
+    .composer textarea{flex:1;min-height:48px;max-height:200px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:#e6eef8;resize:none}
+    .send-row{display:flex;flex-direction:column;gap:8px}
+    .send-btn{background:var(--accent);border:none;color:#fff;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:8px}
+    .send-btn svg{width:16px;height:16px}
+
+    /* settings modal */
+    .modal{position:fixed;left:0;top:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);z-index:400}
+    .modal.active{display:flex}
+    .modal .panel{width:320px;background:#0c1220;padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
+    .panel label{display:block;margin-top:10px;color:var(--muted);font-size:13px}
+    .panel input[type=text],.panel input[type=color]{width:100%;padding:8px;margin-top:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:#e6eef8}
+    .panel .row{display:flex;gap:8px;margin-top:12px}
+    .panel button{padding:8px 10px;border-radius:8px;border:none;cursor:pointer}
+
+    @media (max-width:720px){.chat-wrap{height:100vh;padding-bottom:60px}}
+  </style>
+</head>
+<body>
+  <div class="chat-wrap">
+    <header class="chat-header">
+      <div class="logo">
+        <!-- simple robot/chat SVG -->
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="14" rx="2" fill="#7c3aed"/><circle cx="8" cy="10" r="1.2" fill="#fff"/><circle cx="16" cy="10" r="1.2" fill="#fff"/></svg>
+        <h1>دردشة ذكية</h1>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="settingsBtn" title="الإعدادات">⚙️</button>
+      </div>
+    </header>
+
+    <div class="messages" id="messages" role="log" aria-live="polite"></div>
+
+    <div class="composer">
+      <textarea id="chatInput" placeholder="اكتب رسالتك هنا — اضغط Enter للإرسال (Shift+Enter لسطر جديد)"></textarea>
+      <div class="send-row">
+        <button class="send-btn" id="sendBtn">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 21L23 12L2 3L2 10L17 12L2 14L2 21Z" fill="#fff"/></svg>
+          إرسال
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings modal -->
+  <div class="modal" id="settingsModal">
+    <div class="panel">
+      <h3 style="margin:0 0 6px 0">الإعدادات</h3>
+      <label>لون خلفية الصفحة</label>
+      <input type="color" id="bgColorInput" value="#071028">
+
+      <label>مفتاح API (اختياري — لتمكين إجابات عامة)</label>
+      <input type="text" id="apiKeyInput" placeholder="أدخل مفتاح OpenAI (اختياري)">
+
+      <div class="row" style="margin-top:12px;justify-content:flex-end">
+        <button id="saveSettings" style="background:var(--accent);color:#fff">حفظ</button>
+        <button id="closeSettings" style="background:#334155;color:#fff">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Chat UI with optional remote API integration and local math fallback
+    const messagesEl = document.getElementById('messages');
+    const input = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsModal = document.getElementById('settingsModal');
+    const bgColorInput = document.getElementById('bgColorInput');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const saveSettings = document.getElementById('saveSettings');
+    const closeSettings = document.getElementById('closeSettings');
+
+    // Load settings
+    const savedBg = localStorage.getItem('chat_bg') || '#071028';
+    const savedApiKey = localStorage.getItem('chat_apikey') || '';
+    bgColorInput.value = savedBg;
+    apiKeyInput.value = savedApiKey;
+    document.body.style.background = savedBg;
+
+    settingsBtn.onclick = ()=> settingsModal.classList.add('active');
+    closeSettings.onclick = ()=> settingsModal.classList.remove('active');
+    saveSettings.onclick = ()=>{
+      const v = bgColorInput.value; const k = apiKeyInput.value.trim();
+      localStorage.setItem('chat_bg', v);
+      localStorage.setItem('chat_apikey', k);
+      document.body.style.background = v;
+      settingsModal.classList.remove('active');
+      alert('تم حفظ الإعدادات');
+    }
+
+    // simple utilities and evaluator (same as before)
+    const funcs = ['sqrt','abs','sin','cos','tan','asin','acos','atan','log','ln','max','min','pow'];
+    function sanitizeExpression(expr){
+      expr = expr.replace(/×|\*/g,'*').replace(/÷|:/g,'/').replace(/\u221A/g,'sqrt');
+      expr = expr.replace(/\^/g,'**');
+      expr = expr.replace(/ما|كم|نتيجة|أوجد|احسب|؟|\?/gi,'');
+      expr = expr.replace(/\bمربع\s+(\d+)/gi,'($1**2)');
+      if(/[^0-9+\-*/().,%\sA-Za-z_\*\*]/.test(expr)) expr = expr.replace(/[^0-9+\-*/().,%\sA-Za-z_\*\*]+/g,'');
+      funcs.forEach(fn => { const re = new RegExp('\\b'+fn+'\\b','gi'); expr = expr.replace(re, 'Math.'+fn); });
+      expr = expr.replace(/Math.ln/gi,'Math.log');
+      return expr;
+    }
+    function safeEvaluate(expr){
+      if(/__|process|window|document|eval|Function|=>|while|for|let|const|var/.test(expr)) throw new Error('عبارة غير آمنة');
+      if(/[^0-9+\-*/().,%\sA-Za-z*_]/.test(expr)) throw new Error('حروف غير مسموح بها');
+      const fn = new Function('return ('+expr+');'); const val = fn(); if(typeof val==='number' && !isFinite(val)) throw new Error('قسمة على صفر'); return val;
+    }
+    function extractExpression(text){ let t = text.replace(/\n/g,' '); const hasMathChars = /[0-9()+\-*/^×÷\.]/.test(t); if(!hasMathChars) return null; const allowed = t.match(/[0-9A-Za-z()+\-*/^×÷.,\s]+/g); if(!allowed) return null; return allowed.join(' ').trim(); }
+
+    function appendMessage(text, who){ const div = document.createElement('div'); div.className='msg '+who; div.innerHTML = '<div>'+escapeHtml(text)+'</div>'; messagesEl.appendChild(div); messagesEl.scrollTop = messagesEl.scrollHeight; }
+    function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    // simple conversational fallback
+    function localFallbackReply(text){
+      const t = text.toLowerCase();
+      if(/مرحبا|اهلا|سلام/.test(t)) return 'أهلاً! كيف يمكنني مساعدتك اليوم؟';
+      if(/اسمك/.test(t)) return 'أنا مساعد صغير مدمج في هذه الصفحة.';
+      if(/شكرا|شكراً/.test(t)) return 'على الرحب والسعة!';
+      return null;
+    }
+
+    async function processUserMessage(text){
+      appendMessage(text,'user');
+      appendMessage('جاري التفكير...','bot');
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      await new Promise(r=>setTimeout(r,400));
+      // remove last bot placeholder
+      const bots = Array.from(messagesEl.querySelectorAll('.msg.bot')); const placeholder = bots.pop(); if(placeholder && placeholder.textContent.includes('جاري التفكير')) placeholder.remove();
+
+      // try math extraction
+      const extracted = extractExpression(text);
+      if(extracted){
+        const sanitized = sanitizeExpression(extracted);
+        try{
+          const result = safeEvaluate(sanitized);
+          appendMessage('النتيجة: '+((typeof result==='number')?Math.round(result*1000000)/1000000:result)+'\n('+sanitized+')','bot');
+          return;
+        }catch(e){
+          appendMessage('تعذر حساب التعبير محلياً: '+e.message,'bot');
+          return;
+        }
+      }
+
+      // if API key present, try remote answer
+      const key = localStorage.getItem('chat_apikey') || '';
+      if(key){
+        try{
+          const reply = await fetchOpenAI(text, key);
+          appendMessage(reply,'bot');
+          return;
+        }catch(err){
+          console.warn('API error',err);
+          // fall through to local fallback
+        }
+      }
+
+      const fallback = localFallbackReply(text);
+      if(fallback){ appendMessage(fallback,'bot'); return; }
+
+      appendMessage('أنا الآن محدودة محلياً — لردود طبيعية يمكنك إدخال مفتاح OpenAI في الإعدادات لتجربة إجابات أوسع.','bot');
+    }
+
+    // Optional: call OpenAI Chat API (user must provide key). This code is a simple example.
+    async function fetchOpenAI(userText, apiKey){
+      // Use Chat Completions (gpt-3.5-turbo) endpoint
+      const endpoint = 'https://api.openai.com/v1/chat/completions';
+      const body = {
+        model: 'gpt-3.5-turbo',
+        messages: [{role:'user', content: userText}],
+        max_tokens: 300,
+      };
+      const res = await fetch(endpoint, {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey}, body: JSON.stringify(body)});
+      if(!res.ok) throw new Error('خطأ من الخادم: '+res.status);
+      const data = await res.json();
+      const content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+      return content || 'لا يوجد رد.';
+    }
+
+    sendBtn.onclick = ()=>{ const v = input.value.trim(); if(!v) return; processUserMessage(v); input.value=''; input.focus(); };
+    input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendBtn.click(); } });
+
+    // initial welcome
+    appendMessage('مرحباً! اسألني أي شيء — إن كان سؤالاً رياضياً سأحسبه مباشرة. لإجابات عامة أدخل مفتاح OpenAI في الإعدادات لإتاحة ردود طبيعية كاملة.','bot');
+  </script>
+</body>
+</html>
+      const allowed = t.match(/[0-9A-Za-z()+\-*/^×÷.,\s]+/g);
+      if(!allowed) return null; return allowed.join(' ').trim();
+    }
+
+    function appendMessage(text, who){
+      const div = document.createElement('div'); div.className = 'msg '+who;
+      div.innerHTML = '<div>'+escapeHtml(text)+'</div>';
+      messagesEl.appendChild(div); messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    async function processUserMessage(text){
+      appendMessage(text,'user');
+      // small delay to simulate thinking
+      appendMessage('جاري المعالجة...','bot');
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      await new Promise(r=>setTimeout(r,350));
+
+      // remove 'جاري المعالجة...' bot placeholder
+      const placeholders = Array.from(messagesEl.querySelectorAll('.msg.bot'));
+      const lastPlaceholder = placeholders.pop();
+      if(lastPlaceholder && lastPlaceholder.textContent.includes('جاري المعالجة')) lastPlaceholder.remove();
+
+      // try to extract and evaluate
+      const extracted = extractExpression(text) || text;
+      const sanitized = sanitizeExpression(extracted);
+      try{
+        const result = safeEvaluate(sanitized);
+        const out = (typeof result === 'number') ? (Math.round(result*1000000)/1000000).toString() : String(result);
+        appendMessage('النتيجة: '+out + '\n(' + sanitized + ')','bot');
+      }catch(err){
+        appendMessage('خطأ: '+err.message,'bot');
+      }
+    }
+
+    sendBtn.onclick = ()=>{ const v = input.value.trim(); if(!v) return; processUserMessage(v); input.value=''; input.focus(); };
+    // Enter sends, Shift+Enter newline
+    input.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendBtn.click(); }
+    });
+
+    // welcome message
+    appendMessage('مرحباً! اسألني سؤالاً رياضياً، سأجيبك مباشرة هنا. يمكنك استخدام + - × ÷ ^ ( ) و الدوال: sqrt, sin, cos, log...','bot');
+  </script>
+</body>
+</html>
