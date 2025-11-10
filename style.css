@@ -1,11 +1,15 @@
 body{
     background-image: url(webwall.jpg);
+    background-repeat: no-repeat;
+    /* default for desktop: cover fills viewport (may crop) */
+    background-size: cover;
+    background-position: center center;
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     color: rgb(99, 44, 189);
-  
-
+    /* fallback background color shown where image doesn't fill */
+    background-color: #111;
 }
 h1{
     text-align: center;
@@ -86,14 +90,14 @@ input[type="email"]:focus, input[type="password"]:focus{
 
 .btn-primary{
     background: linear-gradient(90deg, #7b2ce3, #d23cf7);
-    color: white;
+    color: rgb(0, 0, 0);
     box-shadow: 0 8px 24px rgba(123,44,227,0.18);
 }
 .btn-primary:hover{transform: translateY(-4px); filter: brightness(1.03)}
 
 .btn-secondary{
     background: rgba(255,255,255,0.12);
-    color: #fff;
+    color: #000000;
     border: 1px solid rgba(255,255,255,0.12);
 }
 .btn-secondary:hover{transform: translateY(-4px);}
@@ -102,7 +106,7 @@ input[type="email"]:focus, input[type="password"]:focus{
     text-align: center;
     margin: 15px 0;
     font-size: 14px;
-    color: rgba(255,255,255,0.7);
+    color: rgba(0, 0, 0, 0.7);
     padding: 10px;
     border-top: 1px solid rgba(255,255,255,0.1);
     border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -138,6 +142,21 @@ input[type="email"]:focus, input[type="password"]:focus{
 
 /* keep legacy colors for inputs if other selectors depend on them */
 input{font-family:inherit}
+
+/* Mobile: show the whole background image (no cropping) */
+@media (max-width: 768px) {
+    body{
+        /* contain makes the entire image visible inside viewport */
+        background-size: contain;
+        background-position: center top;
+        background-repeat: no-repeat;
+    }
+    /* ensure auth card doesn't cover the image entirely and remains readable */
+    .auth-card{
+        background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+        padding: 18px;
+    }
+}
 
 /* Desktop / larger screens */
 @media (min-width:900px){
