@@ -1,155 +1,214 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>موقعي</title>
-        <link rel="stylesheet" href="style.css">
-        <link rel="shortcut icon" href="imagesfav.png" type="image/x-icon">
-    </head>
-    <body>
-        <main class="container">
-            <section id="auth-area">
-                <!-- Login form shown when not authenticated -->
-                <form id="login-form" aria-label="نموذج تسجيل الدخول">
-                    <h1>تسجيل الدخول</h1>
-          <label for="email">البريد الإلكتروني</label>
-          <input id="email" name="email" type="email" placeholder="you@example.com" required>
+body{
+    background-image: url(webwall.jpg);
+    background-repeat: no-repeat;
+    /* default for desktop: cover fills viewport (may crop) */
+    background-size: cover;
+    background-position: center center;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: rgb(99, 44, 189);
+    /* fallback background color shown where image doesn't fill */
+    background-color: #111;
+}
+h1{
+    text-align: center;
+    margin-top: 30px;
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
 
-          <label for="password">كلمة المرور</label>
-          <input id="password" name="password" type="password" placeholder="••••••" required>
+/* layout */
+.wrapper{
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
 
-                    <div class="row">
-                        <label class="remember">
-                            <input id="remember" type="checkbox"> تذكرني (لا حاجة لتسجيل الدخول لاحقًا)
-                        </label>
-                    </div>
+.auth-card{
+    width: 100%;
+    max-width: 420px;
+    padding: 28px;
+    border-radius: 14px;
+    /* transparent-ish border */
+    border: 1px solid rgba(255,255,255,0.18);
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    backdrop-filter: blur(6px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+    transition: transform 260ms cubic-bezier(.2,.9,.2,1), box-shadow 260ms;
+    transform-origin: center center;
+    animation: popIn 420ms ease both;
+    color: #fff;
+}
 
-                    <button type="submit" class="btn">تسجيل</button>
-                </form>
+.auth-card:hover{
+    transform: translateY(-8px) rotateX(3deg) scale(1.02);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+}
 
-                <!-- Logged-in view shown when authenticated -->
-                <div id="welcome" class="hidden">
-                    <h1 id="welcome-text">مرحبًا</h1>
-                    <p id="welcome-sub">تم تسجيل الدخول بنجاح.</p>
-                    <div class="actions">
-                        <button id="logout" class="btn btn-ghost">تسجيل الخروج</button>
-                    </div>
-                </div>
-            </section>
-    </main>
+@keyframes popIn{
+    from{opacity:0; transform: translateY(12px) scale(.995)}
+    to{opacity:1; transform: translateY(0) scale(1)}
+}
 
-    <script>
-    // Simple client-side persistent login (no backend).
-    // When 'remember' is checked we store the session in localStorage,
-    // otherwise in sessionStorage (cleared when browser closed).
-    const loginForm = document.getElementById('login-form');
-    const welcomeEl = document.getElementById('welcome');
-    const welcomeText = document.getElementById('welcome-text');
-    const welcomeSub = document.getElementById('welcome-sub');
-    const logoutBtn = document.getElementById('logout');
+/* forms and inputs */
+form{display:block}
 
-            function saveSession(payload, remember){
-                const data = JSON.stringify(payload);
-                if(remember) localStorage.setItem('auth_session', data);
-                else sessionStorage.setItem('auth_session', data);
-            }
+input[type="email"], input[type="password"]{
+    width: 100%;
+    padding: 12px 14px;
+    margin: 12px 0;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: rgba(255,255,255,0.92);
+    font-size: 15px;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms;
+    box-sizing: border-box;
+}
 
-            function clearSession(){
-                localStorage.removeItem('auth_session');
-                sessionStorage.removeItem('auth_session');
+input[type="email"]:focus, input[type="password"]:focus{
+    outline: none;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(99,44,189,0.12);
+    border-color: rgba(99,44,189,0.5);
+}
+
+.btn-primary, .btn-secondary{
+    display: inline-block;
+    width: 100%;
+    padding: 12px 16px;
+    margin-top: 12px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms;
+}
+
+.btn-primary{
+    background: linear-gradient(90deg, #7b2ce3, #d23cf7);
+    color: rgb(0, 0, 0);
+    box-shadow: 0 8px 24px rgba(123,44,227,0.18);
+}
+.btn-primary:hover{transform: translateY(-4px); filter: brightness(1.03)}
+
+.btn-secondary{
+    background: rgba(255,255,255,0.12);
+    color: #000000;
+    border: 1px solid rgba(255,255,255,0.12);
+}
+.btn-secondary:hover{transform: translateY(-4px);}
+
+.author-credit {
+    text-align: center;
+    margin: 15px 0;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.card-title {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 25px;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* تحسينات للشاشات الصغيرة */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 20px;
     }
-
-    function loadSession(){
-    const local = localStorage.getItem('auth_session');
-    const sess = sessionStorage.getItem('auth_session');
-    if(local) return JSON.parse(local);
-                if(sess) return JSON.parse(sess);
-                return null;
-            }
-            function showLoggedIn(user){
-                loginForm.classList.add('hidden');
-                welcomeEl.classList.remove('hidden');
-                welcomeText.textContent = `مرحبًا ${user.email.split('@')[0] || ''}`;
-                welcomeSub.textContent = 'أنت الآن متصل — مرحباً بعودتك.';
-            }
-            function showLoggedOut(){
-                loginForm.classList.remove('hidden');
-                welcomeEl.classList.add('hidden');
+    .card-title {
+        font-size: 20px;
     }
+}
+.divider{
+    text-align: center;
+    color: rgba(255,255,255,0.7);
+    margin: 14px 0;
+}
 
-    // On page load, restore session if present
-            document.addEventListener('DOMContentLoaded', ()=>{
-                const session = loadSession();
-                if(session && session.email){
-                    showLoggedIn(session);
-                } else {
-                    showLoggedOut();
-                }
-            });
+/* small responsive tweaks */
+@media (max-width:420px){
+    .auth-card{padding:18px;border-radius:12px}
+}
 
-            // Fake/simulated login handler — replace with real auth call when available.
-            loginForm.addEventListener('submit', (e)=>{
-                e.preventDefault();
-                const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const remember = document.getElementById('remember').checked;
+/* keep legacy colors for inputs if other selectors depend on them */
+input{font-family:inherit}
 
-                // Basic client-side validation
-                if(!email || !password){
-                    alert('الرجاء إدخال البريد الإلكتروني وكلمة المرور.');
-                    return;
-                }
+/* Mobile: show the whole background image (no cropping) */
+@media (max-width: 768px) {
+    body{
+        /* contain makes the entire image visible inside viewport */
+        background-size: contain;
+        background-position: center top;
+        background-repeat: no-repeat;
+    }
+    /* ensure auth card doesn't cover the image entirely and remains readable */
+    .auth-card{
+        background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+        padding: 18px;
+    }
+}
 
-    // Here you would normally send credentials to your server and get a token.
-    // For this demo we accept any credentials and store them locally.
-    const session = { email, created: Date.now() };
-                saveSession(session, remember);
-                showLoggedIn(session);
-            });
-            logoutBtn.addEventListener('click', ()=>{
-                clearSession();
-                showLoggedOut();
-            });
-        </script>
-    </body>
-</html>
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>boil</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="shortcut icon" href="imagesfav.png" type="image/x-icon">
-</head>
-<body>
-    <main class="wrapper">
-        <header>
-           
-        </header>
+/* Desktop / larger screens */
+@media (min-width:900px){
+    body{background-size:cover;background-position:center center}
+    .wrapper{padding:40px}
+    .auth-card{max-width:520px;padding:36px;border-radius:16px}
+    .card-title{font-size:20px;margin-bottom:6px}
+    input[type="email"], input[type="password"]{padding:14px 16px;font-size:16px}
+    .btn-primary, .btn-secondary{padding:14px 18px;font-size:16px}
+}
 
-        <section class="auth-card" aria-labelledby="auth-heading">
-            <h2 id="auth-heading" class="card-title">إنشاء حساب جديد</h2>
+/* ensure good spacing on very small devices */
+@media (max-width:360px){
+    .auth-card{padding:14px}
+    input[type="email"], input[type="password"]{padding:10px}
+}
+h6 {
+    color: white;
+    font-size: 24px;
+    text-align: center;
+    margin-top: 20px;
+    font-family:   Arial, Helvetica, sans-serif ;
+    
+    
+}
+h4{
+    color:wheat;
+    font-size: 14px;
+    text-align: down;
+    margin-top: 10px;
+    font-family:   Arial, Helvetica, sans-serif ;
+    text-decoration: underline;
+    text-underline-position: below;
+}
 
-            <!-- نموذج إنشاء الحساب -->
-            <form class="create-account" action="calculator.html" method="get" autocomplete="on">
-                <label for="new-email" class="sr-only">البريد الإلكتروني</label>
-                <input id="new-email" name="email" type="email" placeholder="أدخل بريدك الإلكتروني" required>
+/* Added styles for persistent login UI */
+.container{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+#auth-area{width:100%;max-width:420px}
+form{background:rgba(255,255,255,0.92);border:1px solid rgba(0,0,0,0.06);padding:18px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.06)}
+form.hidden, #welcome.hidden{display:none}
+form h1{margin:0 0 12px 0;font-size:20px;color:#2c2c2c}
+label{display:block;margin-top:10px;color:#333;font-size:14px}
+input[type="email"],input[type="password"]{width:100%;padding:10px;border-radius:6px;border:1px solid #d9d9d9;margin-top:6px;box-sizing:border-box}
+.row{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.remember{font-size:13px;color:#333}
+.btn{display:inline-block;width:100%;padding:10px;border-radius:8px;border:none;background:linear-gradient(90deg,#7b2ce3,#d23cf7);color:#fff;font-weight:600;margin-top:14px;cursor:pointer}
+.btn-ghost{background:#fff;border:1px solid #cfcfcf;color:#333}
+#welcome{background:rgba(255,255,255,0.96);padding:18px;border-radius:10px;border:1px solid rgba(0,0,0,0.04);box-shadow:0 6px 18px rgba(0,0,0,0.04)}
+#welcome h1{margin:0 0 6px 0}
+.actions{margin-top:12px}
 
-                <label for="new-pass" class="sr-only">كلمة المرور</label>
-                <input id="new-pass" name="password" type="password" placeholder="ادخل كلمة المرور" required>
-                
-                <div class="author-credit">تصميم وتطوير: طيب حديد</div>
-                
-                <button type="submit" class="btn-primary">إنشاء الحساب</button>
-            </form>
-        </section>
-    </main>
-
-    <!-- small accessibility helper -->
-    <style>
-        .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-    </style>
-</body>
-</html>
+@media (max-width:420px){
+    .container{padding:12px}
+    form{padding:14px}
+}
