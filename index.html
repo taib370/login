@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>موقعي</title>
+        <link rel="stylesheet" href="style.css">
+        <link rel="shortcut icon" href="imagesfav.png" type="image/x-icon">
+    </head>
+    <body>
+        <main class="container">
+            <section id="auth-area">
+                <!-- Login form shown when not authenticated -->
+                <form id="login-form" aria-label="نموذج تسجيل الدخول">
+                    <h1>تسجيل الدخول</h1>
+          <label for="email">البريد الإلكتروني</label>
+          <input id="email" name="email" type="email" placeholder="you@example.com" required>
+
+          <label for="password">كلمة المرور</label>
+          <input id="password" name="password" type="password" placeholder="••••••" required>
+
+                    <div class="row">
+                        <label class="remember">
+                            <input id="remember" type="checkbox"> تذكرني (لا حاجة لتسجيل الدخول لاحقًا)
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn">تسجيل</button>
+                </form>
+
+                <!-- Logged-in view shown when authenticated -->
+                <div id="welcome" class="hidden">
+                    <h1 id="welcome-text">مرحبًا</h1>
+                    <p id="welcome-sub">تم تسجيل الدخول بنجاح.</p>
+                    <div class="actions">
+                        <button id="logout" class="btn btn-ghost">تسجيل الخروج</button>
+                    </div>
+                </div>
+            </section>
+    </main>
+
+    <script>
+    // Simple client-side persistent login (no backend).
+    // When 'remember' is checked we store the session in localStorage,
+    // otherwise in sessionStorage (cleared when browser closed).
+    const loginForm = document.getElementById('login-form');
+    const welcomeEl = document.getElementById('welcome');
+    const welcomeText = document.getElementById('welcome-text');
+    const welcomeSub = document.getElementById('welcome-sub');
+    const logoutBtn = document.getElementById('logout');
+
+            function saveSession(payload, remember){
+                const data = JSON.stringify(payload);
+                if(remember) localStorage.setItem('auth_session', data);
+                else sessionStorage.setItem('auth_session', data);
+            }
+
+            function clearSession(){
+                localStorage.removeItem('auth_session');
+                sessionStorage.removeItem('auth_session');
+    }
+
+    function loadSession(){
+    const local = localStorage.getItem('auth_session');
+    const sess = sessionStorage.getItem('auth_session');
+    if(local) return JSON.parse(local);
+                if(sess) return JSON.parse(sess);
+                return null;
+            }
+            function showLoggedIn(user){
+                loginForm.classList.add('hidden');
+                welcomeEl.classList.remove('hidden');
+                welcomeText.textContent = `مرحبًا ${user.email.split('@')[0] || ''}`;
+                welcomeSub.textContent = 'أنت الآن متصل — مرحباً بعودتك.';
+            }
+            function showLoggedOut(){
+                loginForm.classList.remove('hidden');
+                welcomeEl.classList.add('hidden');
+    }
+
+    // On page load, restore session if present
+            document.addEventListener('DOMContentLoaded', ()=>{
+                const session = loadSession();
+                if(session && session.email){
+                    showLoggedIn(session);
+                } else {
+                    showLoggedOut();
+                }
+            });
+
+            // Fake/simulated login handler — replace with real auth call when available.
+            loginForm.addEventListener('submit', (e)=>{
+                e.preventDefault();
+                const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const remember = document.getElementById('remember').checked;
+
+                // Basic client-side validation
+                if(!email || !password){
+                    alert('الرجاء إدخال البريد الإلكتروني وكلمة المرور.');
+                    return;
+                }
+
+    // Here you would normally send credentials to your server and get a token.
+    // For this demo we accept any credentials and store them locally.
+    const session = { email, created: Date.now() };
+                saveSession(session, remember);
+                showLoggedIn(session);
+            });
+            logoutBtn.addEventListener('click', ()=>{
+                clearSession();
+                showLoggedOut();
+            });
+        </script>
+    </body>
+</html>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>boil</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="imagesfav.png" type="image/x-icon">
+</head>
+<body>
+    <main class="wrapper">
+        <header>
+           
+        </header>
+
+        <section class="auth-card" aria-labelledby="auth-heading">
+            <h2 id="auth-heading" class="card-title">إنشاء حساب جديد</h2>
+
+            <!-- نموذج إنشاء الحساب -->
+            <form class="create-account" action="calculator.html" method="get" autocomplete="on">
+                <label for="new-email" class="sr-only">البريد الإلكتروني</label>
+                <input id="new-email" name="email" type="email" placeholder="أدخل بريدك الإلكتروني" required>
+
+                <label for="new-pass" class="sr-only">كلمة المرور</label>
+                <input id="new-pass" name="password" type="password" placeholder="ادخل كلمة المرور" required>
+                
+                <div class="author-credit">تصميم وتطوير: طيب حديد</div>
+                
+                <button type="submit" class="btn-primary">إنشاء الحساب</button>
+            </form>
+        </section>
+    </main>
+
+    <!-- small accessibility helper -->
+    <style>
+        .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    </style>
+</body>
+</html>

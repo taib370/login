@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الآلة الحاسبة</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            color: #000000;
+            font-weight: 500;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        /* Girl Theme - Default */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(45deg, #FF69B4, #FFB6C1);
+            transition: all 0.5s ease;
+        }
+
+        /* Boy Theme */
+        body.boy-theme {
+            background: linear-gradient(45deg, #4169E1, #00BFFF);
+        }
+
+        .calculator {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            width: 320px;
+            transition: all 0.3s ease;
+        }
+
+        .display {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: right;
+            font-size: 2.5em;
+            font-weight: bold;
+            color: rgb(255, 255, 255);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: 80px;
+            overflow: hidden;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            border: none;
+            padding: 20px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Girl Theme Button Colors */
+        button {
+            background: rgba(255, 182, 193, 0.3);
+        }
+
+        .operator {
+            background: rgba(255, 105, 180, 0.4);
+        }
+
+        .equals {
+            background: rgba(255, 20, 147, 0.4);
+            grid-column: span 2;
+        }
+
+        .clear {
+            background: rgba(219, 112, 147, 0.4);
+            grid-column: span 2;
+        }
+
+        /* Boy Theme Button Colors */
+        .boy-theme button {
+            background: rgba(65, 105, 225, 0.3);
+        }
+
+        .boy-theme .operator {
+            background: rgba(0, 191, 255, 0.4);
+        }
+
+        .boy-theme .equals {
+            background: rgba(30, 144, 255, 0.4);
+        }
+
+        .boy-theme .clear {
+            background: rgba(70, 130, 180, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            filter: brightness(1.1);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 360px) {
+            .calculator {
+                width: 280px;
+                padding: 15px;
+            }
+
+            button {
+                padding: 15px;
+                font-size: 1em;
+            }
+
+            .display {
+                font-size: 2em;
+                padding: 15px;
+                height: 70px;
+            }
+        }
+        /* Floating chat button (robot) */
+        .chat-fab{
+            position: fixed;
+            right: 18px;
+            bottom: 18px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+            border: none;
+            cursor: pointer;
+            font-size: 26px;
+            z-index: 220;
+        }
+
+        .chat-fab:active{transform:translateY(1px)}
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🎀 تغيير النمط 🚀</button>
+    
+    <div class="calculator">
+        <div class="display">0</div>
+        <div class="buttons">
+            <button class="clear" onclick="clearDisplay()">حذف</button>
+            <button class="operator" onclick="setOperator('÷')">÷</button>
+            <button onclick="appendNumber('7')">7</button>
+            <button onclick="appendNumber('8')">8</button>
+            <button onclick="appendNumber('9')">9</button>
+            <button class="operator" onclick="setOperator('×')">×</button>
+            <button onclick="appendNumber('4')">4</button>
+            <button onclick="appendNumber('5')">5</button>
+            <button onclick="appendNumber('6')">6</button>
+            <button class="operator" onclick="setOperator('-')">-</button>
+            <button onclick="appendNumber('1')">1</button>
+            <button onclick="appendNumber('2')">2</button>
+            <button onclick="appendNumber('3')">3</button>
+            <button class="operator" onclick="setOperator('+')">+</button>
+            <button onclick="appendNumber('0')">0</button>
+            <button onclick="appendNumber('.')">.</button>
+            <button class="equals" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        let currentDisplay = '0';
+        let firstOperand = null;
+        let operator = null;
+        let newNumberStarted = false;
+        const display = document.querySelector('.display');
+
+        // Theme toggling
+        function toggleTheme() {
+            const body = document.body;
+            const button = document.querySelector('.theme-toggle');
+            if (body.classList.contains('boy-theme')) {
+                body.classList.remove('boy-theme');
+                button.innerHTML = '🎀 تغيير النمط 🚀';
+            } else {
+                body.classList.add('boy-theme');
+                button.innerHTML = '🚀 تغيير النمط 🎀';
+            }
+        }
+
+        function updateDisplay() {
+            display.textContent = currentDisplay;
+        }
+
+        function appendNumber(number) {
+            if (currentDisplay === '0' || newNumberStarted) {
+                currentDisplay = number;
+                newNumberStarted = false;
+            } else {
+                // Prevent multiple decimal points
+                if (number === '.' && currentDisplay.includes('.')) return;
+                currentDisplay += number;
+            }
+            updateDisplay();
+        }
+
+        function setOperator(op) {
+            if (firstOperand === null) {
+                firstOperand = parseFloat(currentDisplay);
+            } else if (!newNumberStarted) {
+                calculate();
+                firstOperand = parseFloat(currentDisplay);
+            }
+            operator = op;
+            newNumberStarted = true;
+        }
+
+        function calculate() {
+            if (operator === null || newNumberStarted) return;
+            
+            const secondOperand = parseFloat(currentDisplay);
+            let result;
+
+            switch (operator) {
+                case '+':
+                    result = firstOperand + secondOperand;
+                    break;
+                case '-':
+                    result = firstOperand - secondOperand;
+                    break;
+                case '×':
+                    result = firstOperand * secondOperand;
+                    break;
+                case '÷':
+                    if (secondOperand === 0) {
+                        result = 'خطأ';
+                    } else {
+                        result = firstOperand / secondOperand;
+                    }
+                    break;
+            }
+
+            // Format the result
+            currentDisplay = typeof result === 'number' ? 
+                (Math.round(result * 1000000) / 1000000).toString() : result;
+            updateDisplay();
+
+            // Reset for next calculation
+            firstOperand = null;
+            operator = null;
+            newNumberStarted = true;
+        }
+
+        function clearDisplay() {
+            currentDisplay = '0';
+            firstOperand = null;
+            operator = null;
+            newNumberStarted = false;
+            updateDisplay();
+        }
+    </script>
+    <!-- floating chat button -->
+    <button class="chat-fab" title="مساعد" onclick="location.href='math-ai.html'">🤖</button>
+</body>
+</html>
