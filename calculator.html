@@ -177,9 +177,62 @@
         }
 
         .chat-fab:active{transform:translateY(1px)}
+        /* amir overlay and button */
+        .amir-btn{
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 12px 18px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 210;
+            background: rgba(255,255,255,0.9);
+            color: #000;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+
+        #amir-overlay{
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+
+        #amir-overlay.show{
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        #amir-overlay .msg{
+            background: rgba(255,255,255,0.98);
+            color: #000;
+            padding: 18px 26px;
+            border-radius: 12px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
     </style>
 </head>
 <body>
+    <!-- Overlay shown when clicking the amir-saidi button -->
+    <div id="amir-overlay" aria-hidden="true">
+        <div class="msg">مرحبا يا شريكي المستقبلي</div>
+    </div>
+
+    <button id="amir" class="amir-btn">amir</button>
     <button class="theme-toggle" onclick="toggleTheme()">🎀 تغيير النمط 🚀</button>
     
     <div class="calculator">
@@ -295,6 +348,28 @@
             newNumberStarted = false;
             updateDisplay();
         }
+
+        // amir overlay logic: show centered message for 5 seconds (resets on repeated clicks)
+        (function(){
+            const amirBtn = document.getElementById('amir');
+            const amirOverlay = document.getElementById('amir-overlay');
+            if(!amirBtn || !amirOverlay) return;
+            let amirTimer = null;
+
+            function showAmirOverlay(){
+                amirOverlay.classList.add('show');
+                amirOverlay.setAttribute('aria-hidden', 'false');
+                // reset any existing timer
+                if(amirTimer) clearTimeout(amirTimer);
+                amirTimer = setTimeout(()=>{
+                    amirOverlay.classList.remove('show');
+                    amirOverlay.setAttribute('aria-hidden', 'true');
+                    amirTimer = null;
+                }, 5000);
+            }
+
+            amirBtn.addEventListener('click', showAmirOverlay);
+        })();
     </script>
     <!-- floating chat button -->
     <button class="chat-fab" title="مساعد" onclick="location.href='math-ai.html'">🤖</button>
