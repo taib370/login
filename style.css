@@ -1,0 +1,242 @@
+body {
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    background: #0f172a;
+    margin: 0;
+    background-repeat: no-repeat;
+    min-height: 100vh; /* ضمان تغطية الخلفية للشاشة بالكامل */
+}
+
+.parent {
+    background: #0a2157;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    border-bottom: solid 0.5px gray;
+}
+
+.parent div {
+    padding: 10px;
+    margin: 15px;
+}
+
+/* التنسيقات القديمة للعناصر العلوية بقيت كما هي */
+.item1, .item2, .item3, .item4 {
+    background: #6366f1;
+    border-radius: 10px;
+    animation-duration: 3s;
+}
+.item1 { animation-name: item1; }
+.item2 { animation-name: item2; }
+.item3 { animation-name: item3; }
+.item4 { animation-name: item4; }
+
+.item1:hover, .item2:hover, .item3:hover, .item4:hover {
+    background: #45f3ff;
+    cursor: pointer;
+    scale: 1.1;
+}
+
+/* --- تعديلات صندوق تسجيل الدخول (Login Box) --- */
+.box {
+    background: rgba(255, 255, 255, 0.1); /* شفافية أحدث */
+    backdrop-filter: blur(10px); /* تأثير الزجاج */
+    width: 400px; /* عرض أساسي */
+    max-width: 90%; /* لضمان العمل على الجوال */
+    /* إزالة الارتفاع الثابت ليتناسب مع المحتوى */
+    padding: 40px;
+    position: absolute;
+    top: 55%; /* تعديل طفيف للموقع */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 20px; /* تقليل الانحناء قليلاً ليتناسب مع النيون */
+    animation-name: box;
+    animation-duration: 1.5s;
+    animation-fill-mode: forwards;
+    overflow: hidden; /* مهم لتأثير النيون */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* تأثير النيون المتحرك */
+.box::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 380px;
+    height: 420px;
+    background: linear-gradient(0deg, transparent, transparent, #45f3ff, #45f3ff, #45f3ff);
+    z-index: 1;
+    transform-origin: bottom right;
+    animation: animateBorder 6s linear infinite;
+}
+
+.box::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 380px;
+    height: 420px;
+    background: linear-gradient(0deg, transparent, transparent, #45f3ff, #45f3ff, #45f3ff);
+    z-index: 1;
+    transform-origin: bottom right;
+    animation: animateBorder 6s linear infinite;
+    animation-delay: -3s;
+}
+
+/* طبقة لتغطية وسط الصندوق وجعل النيون في الأطراف فقط */
+.box form {
+    position: relative;
+    z-index: 2;
+    background: #0f172a; /* نفس لون الخلفية */
+    padding: 30px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+@keyframes animateBorder {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.box h1 {
+    color: white;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 35px;
+    margin-top: 0;
+}
+
+/* تنسيق الحقول الجديدة */
+.input-box {
+    position: relative;
+    width: 100%;
+    margin-top: 25px;
+}
+
+.input-box input {
+    position: relative;
+    width: 100%;
+    padding: 10px 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 1em;
+    letter-spacing: 0.05em;
+    z-index: 10;
+}
+
+.input-box span {
+    position: absolute;
+    left: 0;
+    padding: 10px 0;
+    font-size: 1em;
+    color: #8f8f8f;
+    pointer-events: none;
+    transition: 0.5s;
+}
+
+/* تحريك النص عند الكتابة */
+.input-box input:valid ~ span,
+.input-box input:focus ~ span {
+    color: #45f3ff;
+    transform: translateY(-25px);
+    font-size: 0.75em;
+}
+
+.input-box i {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: #fff;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: 0.5s;
+    pointer-events: none;
+}
+
+.input-box input:valid ~ i,
+.input-box input:focus ~ i {
+    height: 44px;
+    background: #45f3ff;
+    z-index: -1; /* خلف النص */
+    border-radius: 4px;
+    opacity: 0.2; /* شفافية خفيفة */
+}
+
+/* تنسيق Checkbox والروابط */
+.links {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+    font-size: 0.9em;
+    color: #8f8f8f;
+}
+
+.links a {
+    color: #45f3ff;
+    text-decoration: none;
+}
+.links a:hover {
+    text-decoration: underline;
+}
+
+input[type="submit"] {
+    border: none;
+    outline: none;
+    padding: 10px;
+    background: #45f3ff;
+    color: #111;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    font-size: 18px;
+    transition: 0.3s;
+}
+
+input[type="submit"]:hover {
+    opacity: 0.8;
+    box-shadow: 0 0 10px #45f3ff;
+}
+
+/* تعديل الأنيميشن القديم للبوكس لإزالة الحدود السوداء القديمة */
+@keyframes box {
+    from {
+        margin-top: 50px;
+        filter: blur(12px);
+        opacity: 0;
+    }
+    to {
+        /* أزلنا الحدود السوداء واستبدلناها بظل */
+        filter: blur(0px);
+        opacity: 1;
+    }
+}
+
+/* الأنيميشن القديم للعناصر */
+@keyframes item1 { from { color: transparent; background-color: transparent; margin-top: 50px; } }
+@keyframes item2 { from { color: transparent; background-color: transparent; margin-top: 50px; } }
+@keyframes item3 { from { color: transparent; background-color: transparent; margin-top: 50px; } }
+@keyframes item4 { from { color: transparent; background-color: transparent; margin-top: 50px; } }
+
+/* Media Query للتجاوب مع الجوال */
+@media (max-width: 600px) {
+    .box {
+        width: 90%;
+        padding: 20px;
+    }
+    .box form {
+        padding: 20px;
+    }
+}
